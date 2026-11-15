@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/app/theme/custom_color_scheme.dart';
 import 'package:flutter_app/app/theme/custom_text_theme.dart';
@@ -16,25 +15,38 @@ class AppTheme {
     final colorScheme = CustomColorScheme(brightness: brightness);
     final textTheme = CustomTextTheme(colorScheme: colorScheme);
 
-    // Create a native color scheme based on the custom color scheme.
-    var nativeColorScheme = kDebugMode
-        ? _getUndefinedColorScheme(brightness)
-        : ColorScheme.fromSeed(seedColor: colorScheme.primary, brightness: brightness);
-
-    // Override colors that make sense to override, and that we can match.
-    nativeColorScheme = nativeColorScheme.copyWith(
-      surface: colorScheme.surface,
-    );
+    // Material 3 is the runtime source of truth. The legacy palette only
+    // supplies initial values; existing widgets read back from ThemeData.
+    final nativeColorScheme =
+        ColorScheme.fromSeed(
+          seedColor: colorScheme.primary,
+          brightness: brightness,
+        ).copyWith(
+          primary: colorScheme.primary,
+          onPrimary: colorScheme.onPrimary,
+          secondary: colorScheme.secondary,
+          onSecondary: colorScheme.onSecondary,
+          surface: colorScheme.surface,
+          surfaceContainerLow: colorScheme.surfaceVariant,
+          onSurface: colorScheme.onSurface,
+          outlineVariant: colorScheme.divider,
+          error: colorScheme.error,
+          shadow: colorScheme.shadow,
+        );
 
     return ThemeData(
+      useMaterial3: true,
       brightness: brightness,
       colorScheme: nativeColorScheme,
       visualDensity: VisualDensity.standard, // Needed for consistent web and app sizing
-      textTheme: kDebugMode ? _getUndefinedTextTheme() : null,
+      textTheme: textTheme.toMaterialTextTheme(),
       scaffoldBackgroundColor: colorScheme.surface,
+      extensions: <ThemeExtension<dynamic>>[
+        AppSemanticColors.fromPalette(colorScheme),
+      ],
       // Warning: IconButtonTheme needs to be set till this is fixed: https://github.com/flutter/flutter/issues/130485
       iconButtonTheme: const IconButtonThemeData(style: ButtonStyle()),
-      bottomSheetTheme: _getBottomSheetThemeData(colorScheme: colorScheme, textTheme: textTheme),
+      bottomSheetTheme: _getBottomSheetThemeData(colorScheme: colorScheme),
       scrollbarTheme: ScrollbarThemeData(thumbColor: WidgetStateProperty.all(colorScheme.onSurface.withValues(alpha: 0.3))),
       // Warning: textSelectionTheme must be overwritten here.
       // Overriding theme only around TextField does not work for [selectionHandleColor]
@@ -43,77 +55,18 @@ class AppTheme {
       cupertinoOverrideTheme: CupertinoThemeData(primaryColor: colorScheme.secondary),
     );
   }
-
-  static ColorScheme _getUndefinedColorScheme(Brightness brightness) {
-    const undefined = Color(0xFFF700D5);
-    return ColorScheme(
-      brightness: brightness,
-      primary: undefined,
-      onPrimary: undefined,
-      primaryContainer: undefined,
-      onPrimaryContainer: undefined,
-      secondary: undefined,
-      onSecondary: undefined,
-      secondaryContainer: undefined,
-      onSecondaryContainer: undefined,
-      tertiary: undefined,
-      onTertiary: undefined,
-      tertiaryContainer: undefined,
-      onTertiaryContainer: undefined,
-      error: undefined,
-      onError: undefined,
-      errorContainer: undefined,
-      onErrorContainer: undefined,
-      surface: undefined,
-      onSurface: undefined,
-      surfaceContainerHighest: undefined,
-      onSurfaceVariant: undefined,
-      outline: undefined,
-      outlineVariant: undefined,
-      shadow: undefined,
-      scrim: undefined,
-      inverseSurface: undefined,
-      onInverseSurface: undefined,
-      inversePrimary: undefined,
-      surfaceTint: undefined,
-    );
-  }
-
-  static TextTheme _getUndefinedTextTheme() {
-    const undefined = Color(0xFFF700D5);
-    const defaultTextStyle = TextStyle(
-      color: undefined, // Text color
-      decorationColor: undefined,
-    );
-
-    return const TextTheme(
-      displayLarge: defaultTextStyle,
-      displayMedium: defaultTextStyle,
-      displaySmall: defaultTextStyle,
-      headlineLarge: defaultTextStyle,
-      headlineMedium: defaultTextStyle,
-      headlineSmall: defaultTextStyle,
-      titleLarge: defaultTextStyle,
-      titleMedium: defaultTextStyle,
-      titleSmall: defaultTextStyle,
-      labelLarge: defaultTextStyle,
-      labelMedium: defaultTextStyle,
-      labelSmall: defaultTextStyle,
-      bodyLarge: defaultTextStyle,
-      bodyMedium: defaultTextStyle,
-      bodySmall: defaultTextStyle,
-    );
-  }
 }
 
 BottomSheetThemeData _getBottomSheetThemeData({
   required CustomColorScheme colorScheme,
-  required CustomTextTheme textTheme,
 }) => BottomSheetThemeData(
   backgroundColor: colorScheme.surface,
   surfaceTintColor: colorScheme.surface,
   shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+    borderRadius: BorderRadius.only(
+      topLeft: Radius.circular(12),
+      topRight: Radius.circular(12),
+    ),
   ),
 );
 
