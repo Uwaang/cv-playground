@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/app/navigation/app_router.dart';
-import 'package:flutter_app/common/component/custom_bottom_app_bar.dart';
 import 'package:flutter_app/core/supabase/supabase_service.dart';
 
 @RoutePage()
@@ -24,33 +23,77 @@ class RootPage extends StatelessWidget {
       }
     }
 
-    return AutoTabsScaffold(
-      routes: const [
-        HomeRoute(),
-        EventsRoute(),
-        ProfileRoute(),
-      ],
+    return AutoTabsRouter(
+      routes: const [HomeRoute(), EventsRoute(), ProfileRoute()],
       homeIndex: 0,
-      bottomNavigationBuilder: (_, tabsRouter) {
-        return CustomBottomAppBar(
-          selectedIndex: tabsRouter.activeIndex,
-          items: [
-            CustomBottomAppBarItem(
-              label: 'Home',
-              icon: Icons.home,
-              onSelectListener: () => tabsRouter.setActiveIndex(0),
-            ),
-            CustomBottomAppBarItem(
-              label: 'Events',
-              icon: Icons.event,
-              onSelectListener: () => tabsRouter.setActiveIndex(1),
-            ),
-            CustomBottomAppBarItem(
-              label: 'Profile',
-              icon: Icons.person,
-              onSelectListener: () => tabsRouter.setActiveIndex(2),
-            ),
-          ],
+      builder: (context, child) {
+        final tabsRouter = AutoTabsRouter.of(context);
+
+        // Use available layout width, not the current platform. This also
+        // adapts when a desktop window or browser is resized at runtime.
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final useRail = constraints.maxWidth >= 600;
+
+            return Scaffold(
+              body: useRail
+                  ? Row(
+                      children: [
+                        SafeArea(
+                          right: false,
+                          child: NavigationRail(
+                            selectedIndex: tabsRouter.activeIndex,
+                            onDestinationSelected: tabsRouter.setActiveIndex,
+                            labelType: NavigationRailLabelType.all,
+                            destinations: const [
+                              NavigationRailDestination(
+                                icon: Icon(Icons.home_outlined),
+                                selectedIcon: Icon(Icons.home),
+                                label: Text('Home'),
+                              ),
+                              NavigationRailDestination(
+                                icon: Icon(Icons.event_outlined),
+                                selectedIcon: Icon(Icons.event),
+                                label: Text('Events'),
+                              ),
+                              NavigationRailDestination(
+                                icon: Icon(Icons.person_outline),
+                                selectedIcon: Icon(Icons.person),
+                                label: Text('Profile'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const VerticalDivider(width: 1),
+                        Expanded(child: child),
+                      ],
+                    )
+                  : child,
+              bottomNavigationBar: useRail
+                  ? null
+                  : NavigationBar(
+                      selectedIndex: tabsRouter.activeIndex,
+                      onDestinationSelected: tabsRouter.setActiveIndex,
+                      destinations: const [
+                        NavigationDestination(
+                          icon: Icon(Icons.home_outlined),
+                          selectedIcon: Icon(Icons.home),
+                          label: 'Home',
+                        ),
+                        NavigationDestination(
+                          icon: Icon(Icons.event_outlined),
+                          selectedIcon: Icon(Icons.event),
+                          label: 'Events',
+                        ),
+                        NavigationDestination(
+                          icon: Icon(Icons.person_outline),
+                          selectedIcon: Icon(Icons.person),
+                          label: 'Profile',
+                        ),
+                      ],
+                    ),
+            );
+          },
         );
       },
     );
