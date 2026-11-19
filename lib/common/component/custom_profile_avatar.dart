@@ -13,7 +13,7 @@ class CustomClickableProfileAvatar extends StatelessWidget {
     this.onLongClick,
   });
 
-  final String imageUrl;
+  final String? imageUrl;
   final double size;
   final VoidCallback onClick;
   final VoidCallback? onLongClick;
@@ -42,7 +42,7 @@ class CustomProfileAvatar extends StatelessWidget {
     super.key,
   });
 
-  final String imageUrl;
+  final String? imageUrl;
   final double size;
 
   @override
@@ -50,22 +50,24 @@ class CustomProfileAvatar extends StatelessWidget {
     return Center(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size / 2),
-        child: ExtendedImage.network(
-          imageUrl,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          loadStateChanged: (state) {
-            switch (state.extendedImageLoadState) {
-              case LoadState.loading:
-                return const Center(child: CustomProgressIndicator());
-              case LoadState.completed:
-                return state.completedWidget;
-              case LoadState.failed:
-                return Assets.svg.icAvatarDark.svg(width: size, height: size);
-            }
-          },
-        ),
+        child: imageUrl == null || imageUrl!.trim().isEmpty
+            ? Assets.svg.icAvatarDark.svg(width: size, height: size)
+            : ExtendedImage.network(
+                imageUrl!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                loadStateChanged: (state) {
+                  switch (state.extendedImageLoadState) {
+                    case LoadState.loading:
+                      return const Center(child: CustomProgressIndicator());
+                    case LoadState.completed:
+                      return state.completedWidget;
+                    case LoadState.failed:
+                      return Assets.svg.icAvatarDark.svg(width: size, height: size);
+                  }
+                },
+              ),
       ),
     );
   }
