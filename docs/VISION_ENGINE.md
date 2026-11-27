@@ -3,7 +3,7 @@
 ## Design
 
 - **One application repository**: Flutter app and local Dart/C++ package.
-- **OpenCV source**: official `opencv/opencv` Git submodule at `third_party/opencv`, pinned to release **4.14.0** (commit `0654a42e19215ef25b1d367d822f3c630447e7c7`). Do not directly edit upstream OpenCV.
+- **OpenCV source**: official `opencv/opencv` Git submodule at `third_party/opencv`, pinned to release **4.14.0** (commit `0654a42e19`). Do not directly edit upstream OpenCV.
 - **Compilation**: CMake builds OpenCV from source with `BUILD_SHARED_LIBS=OFF` and initial modules `core,imgproc`. The C++ FFI boundary is exported from one `vision_engine` shared library for platforms supporting that packaging model.
 - **Initial dependency policy**: Disable Intel IPP and OpenCV Android example projects. These are optional for the first grayscale Canny smoke test and caused failures on the first Linux/Android Actions run.
 - **CMake header propagation**: The bundled build exposes the OpenCV core/imgproc public include directories explicitly to `vision_engine`; linking OpenCV's static targets alone did not expose those headers on several GitHub-hosted platforms.
@@ -42,3 +42,41 @@ Change the submodule pointer in its own reviewable update. Test a normal native 
 ## Remote repository
 
 The cloned development workspace initially points at its source template as `template-upstream`. Create a distinct `Uwaang/cv-playground` GitHub repository and configure it as the new `origin` before pushing. Never push project changes to the source template.
+
+## Expanded operation suite — Issue #4
+
+The current feature branch adds a native grayscale operation registry with 37
+selectable OpenCV functions. The original Canny C ABI remains available.
+Input PNG/JPEG is decoded, orientation-corrected, limited to 1024 pixels on
+the longest side, converted to grayscale and processed off the Flutter UI
+isolate. Second images are resized to the first image size. The Dart caller
+owns all buffers across the FFI boundary; metadata is copied to a bounded
+caller-owned UTF-8 buffer.
+
+Enabled modules: core, imgproc, features2d, calib3d, objdetect, dnn,
+video and photo. These increase native compile time and binary size.
+
+| Domain | Demo operations | Known limitations |
+| --- | --- | --- |
+| Image processing | Blur, threshold, Canny/Sobel/Laplacian, morphology, CLAHE, histogram, contours, Hough | 8-bit grayscale output |
+| Features and geometry | ORB, QR, ArUco, matched keypoints, RANSAC homography | Pair matching requires suitable textured images |
+| Video analysis | Dense Farneback flow and motion difference | Two selected frames only, no live camera or temporal tracker |
+| Photography | Denoise, scratch inpaint, exposure fusion, blended aligned views | Scratch mask uses bright-pixel threshold; panorama is cropped to input size |
+| Camera / 3D | Chessboard corner display, illustrative undistort, StereoBM disparity | No complete multi-view calibration, need rectified stereo pair |
+| DNN | Local ONNX YOLO boxes and scores, CPU, COCO class names | Supports raw 640x640 YOLOv8/YOLO11-like detection outputs only |
+
+### Models and licensing
+
+The app does not bundle, download, share or upload model weights. Choose a
+compatible local raw YOLO ONNX model (without baked-in NMS); the file is staged
+in the app's temporary directory (128 MB limit). CPU inference first resizes
+grayscale input to 640x640 BGR and parses common YOLO box tensors.
+Other shapes, segmentation masks and model-specific preprocessing are not
+supported. COCO labels are correct only for COCO-trained models. Verify
+licenses for any third-party weights: Ultralytics YOLO models can be subject
+to AGPL-3.0 or a commercial Enterprise license.
+
+Web is preview-only: C++ Native Assets are not executed in JavaScript/WASM
+builds. Camera capture, live video, real calibration, and ONNX Runtime are
+separate future features. Native CI, Dart FFI smoke, real images and a real
+ONNX model are required before this proposed suite can be called verified.

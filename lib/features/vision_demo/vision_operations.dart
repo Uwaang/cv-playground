@@ -1,0 +1,66 @@
+/// Stable operation identifiers shared with vision_engine_process_gray.
+enum VisionOperation {
+  canny(0, 'Canny edges', 'Edges', aLabel: 'Low threshold', defaultA: 50, bLabel: 'High threshold', defaultB: 150, bMax: 300),
+  grayscale(1, 'Grayscale', 'Image processing', aLabel: 'Reserved', aMax: 0, bMax: 0),
+  gaussian(2, 'Gaussian blur', 'Image processing', aLabel: 'Kernel radius', defaultA: 3, aMax: 20, bMax: 0),
+  median(3, 'Median blur', 'Image processing', aLabel: 'Kernel radius', defaultA: 2, aMax: 15, bMax: 0),
+  bilateral(4, 'Bilateral filter', 'Image processing', aLabel: 'Diameter', defaultA: 9, aMax: 21, bLabel: 'Sigma', defaultB: 40),
+  threshold(5, 'Binary threshold', 'Image processing', aLabel: 'Cutoff', defaultA: 128, bMax: 0),
+  adaptive(6, 'Adaptive threshold', 'Image processing', aLabel: 'Block radius', defaultA: 5, aMax: 24, bLabel: 'Offset', defaultB: 7, bMax: 50),
+  sobel(7, 'Sobel magnitude', 'Edges', aMax: 0, bMax: 0),
+  laplacian(8, 'Laplacian', 'Edges', aMax: 0, bMax: 0),
+  erode(9, 'Erode', 'Morphology', aLabel: 'Kernel radius', defaultA: 2, aMax: 16, bMax: 0),
+  dilate(10, 'Dilate', 'Morphology', aLabel: 'Kernel radius', defaultA: 2, aMax: 16, bMax: 0),
+  opening(11, 'Morphological opening', 'Morphology', aLabel: 'Kernel radius', defaultA: 2, aMax: 16, bMax: 0),
+  closing(12, 'Morphological closing', 'Morphology', aLabel: 'Kernel radius', defaultA: 2, aMax: 16, bMax: 0),
+  equalize(13, 'Histogram equalization', 'Image processing', aMax: 0, bMax: 0),
+  clahe(14, 'CLAHE contrast', 'Image processing', aLabel: 'Clip limit', defaultA: 3, aMax: 15, bMax: 0),
+  contours(15, 'Contour outlines', 'Detection', aLabel: 'Cutoff', defaultA: 128, bMax: 0),
+  houghLines(16, 'Hough lines', 'Detection', aLabel: 'Votes', defaultA: 60, bMax: 0),
+  houghCircles(17, 'Hough circles', 'Detection', aLabel: 'Accumulator', defaultA: 40, aMax: 100, bMax: 0),
+  histogram(18, 'Intensity histogram', 'Image processing', aMax: 0, bMax: 0),
+  sharpen(19, 'Sharpen', 'Image processing', aMax: 0, bMax: 0),
+  rotate(20, 'Rotation', 'Geometry', aLabel: 'Degrees', defaultA: 20, aMax: 360, bMax: 0),
+  harris(21, 'Harris corners', 'Features & geometry', aLabel: 'Sensitivity', defaultA: 15, aMax: 100, bMax: 0),
+  orb(22, 'ORB keypoints', 'Features & geometry', aLabel: 'Maximum points', defaultA: 250, aMax: 1000, bMax: 0),
+  qr(23, 'QR code reader', 'Features & geometry', aMax: 0, bMax: 0),
+  opticalFlow(24, 'Optical flow', 'Video analysis', needsSecond: true, aLabel: 'Grid spacing', defaultA: 20, aMax: 60, bMax: 0),
+  frameDifference(25, 'Frame difference', 'Video analysis', needsSecond: true, aLabel: 'Threshold', defaultA: 24, bMax: 0),
+  denoise(26, 'Non-local means denoise', 'Photography', aLabel: 'Filter strength', defaultA: 10, aMax: 40, bMax: 0),
+  inpaint(27, 'Bright scratch inpaint', 'Photography', aLabel: 'Bright cutoff', defaultA: 245, bMax: 0),
+  stereo(28, 'Stereo disparity', 'Camera & 3D', needsSecond: true, aLabel: 'Block size', defaultA: 9, aMax: 25, bMax: 0),
+  featureMatch(29, 'ORB feature matching', 'Features & geometry', needsSecond: true, aLabel: 'Max matches', defaultA: 100, aMax: 500, bMax: 0),
+  homography(30, 'Homography alignment', 'Features & geometry', needsSecond: true, aMax: 0, bMax: 0),
+  yolo(31, 'YOLO ONNX detection (CPU)', 'Deep learning', needsModel: true, aLabel: 'Confidence %', defaultA: 40, aMax: 100, bLabel: 'NMS %', defaultB: 45, bMax: 100),
+  exposureFusion(32, 'Exposure fusion', 'Photography', needsSecond: true, aMax: 0, bMax: 0),
+  aruco(33, 'ArUco marker detection', 'Features & geometry', aMax: 0, bMax: 0),
+  panorama(34, 'Two-view panorama blend', 'Photography', needsSecond: true, aMax: 0, bMax: 0),
+  chessboard(35, 'Chessboard corners (9×6)', 'Camera & 3D', aMax: 0, bMax: 0),
+  undistort(36, 'Radial distortion correction', 'Camera & 3D', aLabel: 'Distortion × 100', defaultA: 20, aMax: 100, bMax: 0);
+
+  const VisionOperation(
+    this.id,
+    this.label,
+    this.category, {
+    this.needsSecond = false,
+    this.needsModel = false,
+    this.aLabel = 'Parameter',
+    this.defaultA = 0,
+    this.aMax = 255,
+    this.bLabel = 'Parameter 2',
+    this.defaultB = 0,
+    this.bMax = 255,
+  });
+
+  final int id;
+  final String label;
+  final String category;
+  final bool needsSecond;
+  final bool needsModel;
+  final String aLabel;
+  final double defaultA;
+  final double aMax;
+  final String bLabel;
+  final double defaultB;
+  final double bMax;
+}
