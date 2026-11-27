@@ -12,7 +12,8 @@
 - **Native Assets logging**: The build hook uses an inherited logger level, rather than setting a named logger's level while hierarchical logging is disabled.
 - **Windows smoke test**: CMake copies the engine DLL next to the CTest executable so the Windows loader can resolve it without modifying the runner's global PATH.
 - **Dart integration**: `packages/vision_engine` contains `hook/build.dart` and a C ABI accessed through Dart `@Native` declarations. The native-assets CMake adapter is experimental: platform builds must verify hook output, packaging, and runtime loading before the app depends on it.
-- **Current algorithm**: Canny on packed 8-bit grayscale images, as an intentionally small FFI smoke test. The Dart API copies pixels; this is **not** a zero-copy real-time camera pipeline.
+- **Current algorithm**: The new Flutter Image Playground picks PNG/JPEG with `file_selector`, downsizes to a maximum dimension of 1024 pixels, converts to grayscale in a Dart Isolate, and calls Canny through the C ABI. This is **not** a zero-copy real-time camera pipeline.
+- **Web**: The page supports selecting and previewing an image, but native Canny is unavailable; WebAssembly OpenCV requires a separate bridge.
 - **Camera**: Flutter-first when implemented, only add native camera capture if performance tests justify it.
 - **ORT/Web**: not yet integrated. Web requires a separate WASM-compatible bridge; native `dart:ffi` cannot run in browsers.
 
@@ -28,7 +29,7 @@ cmake -S packages/vision_engine/native -B build/vision-native -DCMAKE_BUILD_TYPE
 cmake --build build/vision-native --config Release --parallel
 ```
 
-To exercise the Dart Native Assets adapter, resolve dependencies in `packages/vision_engine` and run `dart test` on a native platform. This must be completed and validated in CI before adding `vision_engine` as a production dependency of the Flutter app.
+To exercise the Dart Native Assets adapter, resolve dependencies in `packages/vision_engine` and run `dart test` on a native platform. Native Flutter packaging and file selection still require independent platform CI and manual device validation.
 
 ## CI boundaries
 

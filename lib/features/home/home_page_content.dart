@@ -50,6 +50,12 @@ class HomePageContent extends StatelessWidget {
                               icon: const Icon(Icons.widgets_outlined),
                               label: Text(context.locale.featureHomepageOpenDebugTools),
                             ),
+                            const SizedBox(height: 12),
+                            FilledButton.tonalIcon(
+                              onPressed: () => context.pushRoute(const VisionDemoRoute()),
+                              icon: const Icon(Icons.grain_outlined),
+                              label: const Text('OpenCV Canny playground'),
+                            ),
                           ],
                         ),
                       ),

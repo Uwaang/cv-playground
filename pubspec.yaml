@@ -49,6 +49,8 @@ dependencies:
 
   # Resources
   extended_image: 10.0.1
+  file_selector: ^1.1.0
+  image: ^4.8.0
   flutter_native_splash: ^2.4.7
   flutter_svg: ^2.2.1
   intl: 0.20.2
@@ -61,6 +63,10 @@ dependencies:
   # Utility
   collection: 1.19.1
   crypto: ^3.0.7
+
+  # Source-built native OpenCV engine (Web uses a conditional UI fallback).
+  vision_engine:
+    path: packages/vision_engine
 
 
 dev_dependencies:

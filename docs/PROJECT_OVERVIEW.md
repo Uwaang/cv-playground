@@ -8,7 +8,7 @@ This project is derived from the Flutter template. The current application route
 - Riverpod with code generation, Freezed, AutoRoute, and SharedPreferences for simple local UI state.
 - Optional Supabase Auth using a public project URL and publishable key. Google/Apple use Supabase OAuth; native/desktop callbacks need independent real-device verification.
 - No bundled REST API/backend, profile database/CRUD, push/local notification service, threat detection, external analytics or signed release pipeline.
-- New native boundary: `packages/vision_engine` (C++/CMake and Dart FFI), plus the official OpenCV Submodule at `third_party/opencv`. See [Vision Engine](VISION_ENGINE.md). This is not yet called by the Flutter screens.
+- New native boundary: `packages/vision_engine` (C++/CMake and Dart FFI), plus the official OpenCV Submodule at `third_party/opencv`. See [Vision Engine](VISION_ENGINE.md). The Image Playground is wired through native Dart FFI, with preview-only behavior on Web.
 
 ## Starting the app
 Entry points `lib/main_develop.dart`, `lib/main_staging.dart`, and `lib/main_production.dart` call `setupApp`:
@@ -24,6 +24,7 @@ Neither secret keys nor real Supabase credentials are injected by public CI. `to
 - `AuthenticationRoute`: Google, Apple and anonymous sign-in with configured Supabase, or Mock Sign In without configuration.
 - `RootRoute`: adaptive Home, Events and Profile tabs.
 - `EventDetailRoute` and `DebugToolsRoute`: illustrative navigation and Material 3 component examples.
+- `VisionDemoRoute`: choose a PNG/JPEG, adjust thresholds, and compare source with Canny edges on native platforms.
 
 The Debug Tools page includes local widgets, dialogs, typography, theme colors and layout diagnostics. It does not request notification permissions or call remote placeholder endpoints.
 
