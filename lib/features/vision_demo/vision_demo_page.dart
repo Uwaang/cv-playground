@@ -55,7 +55,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
         _error = null;
       });
       if (processor.isNativeCannySupported) await _apply();
-    } catch (error) {
+    } on Object catch (error) {
       if (!mounted) return;
       setState(() => _error = _describeError(error));
     }
@@ -79,7 +79,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
       );
       if (!mounted || _requestId != id) return;
       setState(() => _result = output);
-    } catch (error) {
+    } on Object catch (error) {
       if (!mounted || _requestId != id) return;
       setState(() => _error = _describeError(error));
     } finally {
