@@ -18,6 +18,13 @@ Workflow: `.github/workflows/platform-builds.yml`
 
 The active Flutter SDK version comes from `.fvmrc`. Executable workflow YAML and project configuration take precedence over historical text.
 
+## Native Assets compilation cost
+
+- The `quality` job runs `build_runner` once, then `git diff --exit-code` ensures generated Dart remains committed and reproducible. Platform, Web smoke, Android emulator and Pages jobs reuse those generated files rather than rerun `build_runner` on every runner.
+- Run the standalone fixture generator with `dart tool/create_ci_env.dart` instead of `dart run tool/create_ci_env.dart` so it does not invoke package build hooks simply to write placeholder environment files.
+- Native Flutter package builds and the separate Linux FFI smoke test still invoke the OpenCV Native Assets hook as needed. Do not bypass the hook for real native builds or assume Web includes OpenCV WASM.
+- This is the first low-maintenance optimization. Before adding large cross-run CMake caches, measure CI durations and weigh cache size, SDK changes, and native-platform correctness.
+
 ## Native OpenCV validation
 
 Workflow: `.github/workflows/native-vision.yml`
