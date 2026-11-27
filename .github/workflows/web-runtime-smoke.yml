@@ -47,9 +47,10 @@ jobs:
           flutter-version-file: .fvmrc
           cache: true
       - run: flutter pub get
-      - run: dart run tool/create_ci_env.dart
+      - run: dart tool/create_ci_env.dart
       - run: flutter gen-l10n --arb-dir assets/localization --template-arb-file app_en.arb --output-localization-file app_localizations.gen.dart --output-dir lib/assets
-      - run: dart run build_runner build --delete-conflicting-outputs
+      # Generated sources are committed and checked for drift by Platform Builds.
+      # Avoid another Native Assets compilation from build_runner.
       - name: Compile actual web artifact
         env:
           MODE: ${{ matrix.mode }}
