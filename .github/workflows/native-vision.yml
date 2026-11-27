@@ -63,6 +63,20 @@ jobs:
         shell: bash
         run: |
           test -n "$(find build/vision-native -type f \( -name 'libvision_engine.so' -o -name 'libvision_engine.dylib' \) -print -quit)"
+      - name: Set up Dart for Native Assets FFI test
+        if: matrix.target == 'linux'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+      - name: Resolve Dart FFI package
+        if: matrix.target == 'linux'
+        working-directory: packages/vision_engine
+        run: dart pub get
+      - name: Run Dart FFI smoke tests
+        if: matrix.target == 'linux'
+        working-directory: packages/vision_engine
+        run: dart test
 
   native-mobile:
     name: OpenCV C++ ${{ matrix.target }}
