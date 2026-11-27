@@ -10,8 +10,6 @@ import 'package:native_toolchain_cmake/native_toolchain_cmake.dart';
 /// @Native functions in lib/vision_engine.dart.
 void main(List<String> args) async {
   await build(args, (input, output) async {
-    if (!input.config.buildCodeAssets) return;
-
     final opencv = input.packageRoot.resolve('../../third_party/opencv/');
     if (!File.fromUri(opencv.resolve('CMakeLists.txt')).existsSync()) {
       throw StateError(
