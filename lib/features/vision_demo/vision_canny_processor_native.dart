@@ -17,7 +17,7 @@ Future<String> stageOnnxModel(Uint8List bytes) async {
     throw const FormatException('Choose an ONNX model under 128 MB.');
   }
   final directory = await getTemporaryDirectory();
-  final file = File(directory.path + '/cv-playground-model.onnx');
+  final file = File('${directory.path}/cv-playground-model.onnx');
   await file.writeAsBytes(bytes, flush: true);
   return file.path;
 }
