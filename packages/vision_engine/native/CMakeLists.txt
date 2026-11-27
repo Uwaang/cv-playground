@@ -54,6 +54,8 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   target_include_directories(vision_engine PRIVATE
     "${OPENCV_SOURCE_DIR}/modules/core/include"
     "${OPENCV_SOURCE_DIR}/modules/imgproc/include"
+    # OpenCV generates opencv2/opencv_modules.hpp under CMAKE_BINARY_DIR.
+    "${CMAKE_CURRENT_BINARY_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}/opencv-build"
   )
 endif()
