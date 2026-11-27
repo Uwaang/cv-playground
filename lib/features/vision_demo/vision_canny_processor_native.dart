@@ -29,8 +29,8 @@ CannyResult _processImage(Uint8List encoded, int low, int high) {
   const maxDimension = 1024;
   final longest = upright.width > upright.height ? upright.width : upright.height;
   final scale = longest > maxDimension ? maxDimension / longest : 1.0;
-  final width = (upright.width * scale).round().clamp(1, maxDimension).toInt();
-  final height = (upright.height * scale).round().clamp(1, maxDimension).toInt();
+  final width = (upright.width * scale).round().clamp(1, maxDimension);
+  final height = (upright.height * scale).round().clamp(1, maxDimension);
   final image = scale < 1.0 ? img.copyResize(upright, width: width, height: height) : upright;
 
   final grayscale = Uint8List(width * height);
@@ -55,7 +55,7 @@ CannyResult _processImage(Uint8List encoded, int low, int high) {
     highThreshold: high.toDouble(),
   );
 
-  final output = img.Image(width: width, height: height, numChannels: 3);
+  final output = img.Image(width: width, height: height);
   for (var y = 0; y < height; y++) {
     for (var x = 0; x < width; x++) {
       final value = edges[y * width + x];
