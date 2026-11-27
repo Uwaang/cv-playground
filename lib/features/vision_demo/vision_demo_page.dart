@@ -7,6 +7,7 @@ import 'package:flutter_app/features/vision_demo/canny_result.dart';
 import 'package:flutter_app/features/vision_demo/vision_canny_processor_native.dart'
     if (dart.library.js_interop) 'vision_canny_processor_web.dart'
     as processor;
+import 'package:flutter_app/features/vision_demo/vision_operations.dart';
 
 @RoutePage()
 class VisionDemoPage extends StatefulWidget {
@@ -18,72 +19,117 @@ class VisionDemoPage extends StatefulWidget {
 
 class _VisionDemoPageState extends State<VisionDemoPage> {
   Uint8List? _original;
-  String? _fileName;
-  CannyResult? _result;
+  Uint8List? _second;
+  String? _originalName;
+  String? _secondName;
+  String? _modelPath;
+  String? _modelName;
+  VisionResult? _result;
   String? _error;
   bool _busy = false;
-  double _lowThreshold = 50;
-  double _highThreshold = 150;
-  int _requestId = 0;
+  VisionOperation _operation = VisionOperation.canny;
+  double _a = VisionOperation.canny.defaultA;
+  double _b = VisionOperation.canny.defaultB;
+  int _generation = 0;
 
-  Future<void> _selectImage() async {
+  static const imageTypes = XTypeGroup(
+    label: 'Images',
+    extensions: ['jpg', 'jpeg', 'png'],
+    mimeTypes: ['image/jpeg', 'image/png'],
+    uniformTypeIdentifiers: ['public.jpeg', 'public.png'],
+  );
+
+  bool get _canApply => _original != null && (!_operation.needsSecond || _second != null) && (!_operation.needsModel || _modelPath != null);
+
+  Future<void> _loadImage({bool secondary = false}) async {
     if (_busy) return;
     try {
-      const types = XTypeGroup(
-        label: 'Images',
-        extensions: ['jpg', 'jpeg', 'png'],
-        mimeTypes: ['image/jpeg', 'image/png'],
-        uniformTypeIdentifiers: ['public.jpeg', 'public.png'],
-      );
-      final selected = await openFile(acceptedTypeGroups: [types]);
+      final selected = await openFile(acceptedTypeGroups: [imageTypes]);
       if (selected == null) return;
       if (await selected.length() > 16 * 1024 * 1024) {
-        throw const FormatException(
-          'Choose an image under 16 MB for this first demo.',
-        );
+        throw const FormatException('Choose a PNG or JPEG under 16 MB.');
       }
       final bytes = await selected.readAsBytes();
-      if (bytes.isEmpty) {
-        throw const FormatException('The selected image is empty.');
-      }
+      if (bytes.isEmpty) throw const FormatException('Image is empty.');
       if (!mounted) return;
       setState(() {
-        _requestId++;
-        _original = bytes;
-        _fileName = selected.name;
+        _generation++;
+        if (secondary) {
+          _second = bytes;
+          _secondName = selected.name;
+        } else {
+          _original = bytes;
+          _originalName = selected.name;
+        }
         _result = null;
         _error = null;
       });
-      if (processor.isNativeCannySupported) await _apply();
+      if (processor.isNativeVisionSupported && _canApply) await _apply();
     } on Object catch (error) {
-      if (!mounted) return;
-      setState(() => _error = _describeError(error));
+      if (mounted) setState(() => _error = _describeError(error));
     }
+  }
+
+  Future<void> _loadModel() async {
+    if (_busy || !processor.isNativeVisionSupported) return;
+    try {
+      const types = XTypeGroup(label: 'ONNX model', extensions: ['onnx']);
+      final selected = await openFile(acceptedTypeGroups: [types]);
+      if (selected == null) return;
+      if (await selected.length() > 128 * 1024 * 1024) {
+        throw const FormatException('Choose an ONNX model under 128 MB.');
+      }
+      final path = await processor.stageOnnxModel(await selected.readAsBytes());
+      if (!mounted) return;
+      setState(() {
+        _modelPath = path;
+        _modelName = selected.name;
+        _generation++;
+        _result = null;
+        _error = null;
+      });
+    } on Object catch (error) {
+      if (mounted) setState(() => _error = _describeError(error));
+    }
+  }
+
+  void _changeOperation(VisionOperation operation) {
+    if (_busy) return;
+    setState(() {
+      _operation = operation;
+      _a = operation.defaultA;
+      _b = operation.defaultB;
+      _result = null;
+      _error = null;
+      _generation++;
+    });
   }
 
   Future<void> _apply() async {
     final source = _original;
-    if (_busy || source == null || !processor.isNativeCannySupported) {
-      return;
-    }
-    final id = ++_requestId;
+    if (source == null || _busy || !_canApply || !processor.isNativeVisionSupported) return;
+    final request = ++_generation;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      final output = await processor.runCanny(
+      final output = await processor.runVision(
         source,
-        lowThreshold: _lowThreshold.round(),
-        highThreshold: _highThreshold.round(),
+        operation: _operation,
+        parameterA: _a,
+        parameterB: _b,
+        secondImage: _operation.needsSecond ? _second : null,
+        modelPath: _operation.needsModel ? _modelPath : null,
       );
-      if (!mounted || _requestId != id) return;
+      if (!mounted || request != _generation) return;
       setState(() => _result = output);
     } on Object catch (error) {
-      if (!mounted || _requestId != id) return;
-      setState(() => _error = _describeError(error));
+      if (mounted && request == _generation) {
+        setState(() => _error = _describeError(error));
+      }
     } finally {
-      if (mounted && _requestId == id) {
+      if (mounted && request == _generation) {
         setState(() => _busy = false);
       }
     }
@@ -91,7 +137,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
 
   String _describeError(Object error) {
     if (error is FormatException) return error.message;
-    return 'Image processing failed: $error';
+    return 'OpenCV processing failed: $error';
   }
 
   @override
@@ -99,10 +145,10 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
     final theme = Theme.of(context);
     final source = _original;
     final output = _result;
-    final supported = processor.isNativeCannySupported;
-
+    final operation = _operation;
+    final supported = processor.isNativeVisionSupported;
     return Scaffold(
-      appBar: AppBar(title: const Text('OpenCV · Canny edges')),
+      appBar: AppBar(title: const Text('OpenCV Playground')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -113,11 +159,11 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                 Text('Image playground', style: theme.textTheme.headlineMedium),
                 const SizedBox(height: 8),
                 Text(
-                  'Choose a PNG or JPEG, then compare the original with '
-                  'edges detected by our source-built C++ OpenCV engine.',
+                  'Explore filters, features, geometry, optical flow, '
+                  'photography, stereo vision and local ONNX detection.',
                   style: theme.textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 if (!supported) ...[
                   const Card.filled(
                     child: Padding(
@@ -128,8 +174,9 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Image preview works on Web. Native OpenCV '
-                              'processing needs a future WASM bridge.',
+                              'Web supports selecting images and operations. '
+                              'Native OpenCV requires a desktop or mobile build; '
+                              'the WASM bridge is not implemented.',
                             ),
                           ),
                         ],
@@ -139,59 +186,120 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                   const SizedBox(height: 16),
                 ],
                 Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 12,
-                  runSpacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     FilledButton.icon(
-                      onPressed: _busy ? null : _selectImage,
+                      onPressed: _busy ? null : _loadImage,
                       icon: const Icon(Icons.add_photo_alternate_outlined),
                       label: const Text('Choose image'),
                     ),
-                    if (source != null)
-                      Text(
-                        _fileName ?? 'Selected image',
-                        style: theme.textTheme.bodyMedium,
-                      ),
+                    if (_originalName != null) Text(_originalName!),
                     if (_busy)
                       const SizedBox(
-                        width: 24,
                         height: 24,
+                        width: 24,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                   ],
                 ),
+                const SizedBox(height: 18),
+                DropdownButtonFormField<VisionOperation>(
+                  key: ValueKey(operation),
+                  initialValue: operation,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'OpenCV operation',
+                  ),
+                  items: [
+                    for (final candidate in VisionOperation.values)
+                      DropdownMenuItem(
+                        value: candidate,
+                        child: Text(
+                          '${candidate.category} · ${candidate.label}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
+                  onChanged: _busy
+                      ? null
+                      : (candidate) {
+                          if (candidate != null) _changeOperation(candidate);
+                        },
+                ),
+                if (operation.needsSecond) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _busy ? null : () => _loadImage(secondary: true),
+                        icon: const Icon(Icons.compare),
+                        label: const Text('Choose second image / frame'),
+                      ),
+                      if (_secondName != null) Text(_secondName!),
+                    ],
+                  ),
+                  Text(
+                    'Pair mode resizes the second image. For stereo depth, '
+                    'use a rectified left/right pair.',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+                if (operation.needsModel) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _busy ? null : _loadModel,
+                        icon: const Icon(Icons.model_training),
+                        label: const Text('Choose local YOLO .onnx'),
+                      ),
+                      if (_modelName != null) Text(_modelName!),
+                    ],
+                  ),
+                  Text(
+                    'Use a raw 640×640 YOLOv8/YOLO11 ONNX detector. '
+                    'Inference is CPU-only, COCO names are assumed, '
+                    'and model weights are not bundled or uploaded.',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
                 if (supported && source != null) ...[
-                  const SizedBox(height: 24),
-                  Text('Canny thresholds', style: theme.textTheme.titleMedium),
-                  _ThresholdSlider(
-                    label: 'Low',
-                    value: _lowThreshold,
-                    min: 0,
-                    max: _highThreshold,
-                    enabled: !_busy,
-                    onChanged: (value) => setState(() {
-                      _lowThreshold = value;
-                      _result = null;
-                    }),
-                  ),
-                  _ThresholdSlider(
-                    label: 'High',
-                    value: _highThreshold,
-                    min: _lowThreshold,
-                    max: 300,
-                    enabled: !_busy,
-                    onChanged: (value) => setState(() {
-                      _highThreshold = value;
-                      _result = null;
-                    }),
-                  ),
+                  const SizedBox(height: 12),
+                  if (operation.aMax > 0)
+                    _ParameterSlider(
+                      label: operation.aLabel,
+                      value: _a,
+                      max: operation.aMax,
+                      enabled: !_busy,
+                      onChanged: (value) => setState(() {
+                        _a = value;
+                        _result = null;
+                      }),
+                    ),
+                  if (operation.bMax > 0)
+                    _ParameterSlider(
+                      label: operation.bLabel,
+                      value: _b,
+                      max: operation.bMax,
+                      enabled: !_busy,
+                      onChanged: (value) => setState(() {
+                        _b = value;
+                        _result = null;
+                      }),
+                    ),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: FilledButton.tonalIcon(
-                      onPressed: _busy ? null : _apply,
+                      onPressed: _busy || !_canApply ? null : _apply,
                       icon: const Icon(Icons.play_arrow),
-                      label: const Text('Apply Canny'),
+                      label: Text('Apply ${operation.label}'),
                     ),
                   ),
                 ],
@@ -219,36 +327,36 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                 else
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final wide = constraints.maxWidth >= 680;
                       final original = _PreviewCard(
                         title: 'Original',
                         bytes: source,
-                        detail: _fileName,
+                        detail: _originalName,
                       );
                       final processed = _PreviewCard(
-                        title: 'Canny output',
+                        title: '${operation.label} output',
                         bytes: output?.png,
                         detail: output == null
-                            ? (supported ? 'Apply Canny to see the result' : 'Not available on Web')
+                            ? (supported ? 'Apply to see the result' : 'Not available on Web')
                             : '${output.width} × ${output.height} · OpenCV '
-                                  '${output.openCvVersion}',
+                                  '${output.openCvVersion}\n${output.metadata}',
                       );
-                      return wide
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(child: original),
-                                const SizedBox(width: 16),
-                                Expanded(child: processed),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                original,
-                                const SizedBox(height: 16),
-                                processed,
-                              ],
-                            );
+                      if (constraints.maxWidth < 680) {
+                        return Column(
+                          children: [
+                            original,
+                            const SizedBox(height: 16),
+                            processed,
+                          ],
+                        );
+                      }
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: original),
+                          const SizedBox(width: 16),
+                          Expanded(child: processed),
+                        ],
+                      );
                     },
                   ),
               ],
@@ -260,11 +368,10 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
   }
 }
 
-class _ThresholdSlider extends StatelessWidget {
-  const _ThresholdSlider({
+class _ParameterSlider extends StatelessWidget {
+  const _ParameterSlider({
     required this.label,
     required this.value,
-    required this.min,
     required this.max,
     required this.enabled,
     required this.onChanged,
@@ -272,7 +379,6 @@ class _ThresholdSlider extends StatelessWidget {
 
   final String label;
   final double value;
-  final double min;
   final double max;
   final bool enabled;
   final ValueChanged<double> onChanged;
@@ -281,17 +387,17 @@ class _ThresholdSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: 48, child: Text(label)),
+        Expanded(flex: 2, child: Text(label)),
         Expanded(
+          flex: 4,
           child: Slider(
-            value: value.clamp(min, max),
-            min: min,
+            value: value.clamp(0.0, max),
             max: max,
-            onChanged: enabled && min < max ? onChanged : null,
+            onChanged: enabled ? onChanged : null,
           ),
         ),
         SizedBox(
-          width: 36,
+          width: 42,
           child: Text(value.round().toString(), textAlign: TextAlign.end),
         ),
       ],

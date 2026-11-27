@@ -78,3 +78,11 @@ This project derives from [STRV Flutter Template](https://github.com/strvcom/flu
 ## Downloadable CI builds
 
 The [Platform Builds Actions workflow](https://github.com/Uwaang/flutter-template/actions/workflows/platform-builds.yml) uploads build results after quality checks. Each run includes an **Artifact download guide** summary. For manual checks, use `compile-only-android` (profile APK plus AAB), `compile-only-windows` (extract the full ZIP, including the runtime files) or the appropriate Linux/Web/macOS/iOS bundle. Artifacts expire after **7 days** and are built with non-secret placeholder configuration: they are **not** production-signed, installer packages, full runtime QA, or Google/Apple OAuth builds. The macOS and iOS bundles are unsigned. See [CI](docs/CI.md).
+
+## CV experiments
+
+The **OpenCV Playground** image screen offers filters, features and matching,
+QR/ArUco, frame-pair optical flow and stereo disparity, photography demos,
+and locally selected YOLO ONNX detection (native CPU). See
+[Vision engine](docs/VISION_ENGINE.md) for input expectations, platform limits,
+model licensing and testing requirements. No model weights are included.

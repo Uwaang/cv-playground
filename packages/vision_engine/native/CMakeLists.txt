@@ -8,6 +8,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 option(VISION_ENGINE_BUNDLED_OPENCV "Compile OpenCV from the pinned submodule" ON)
 
 if(VISION_ENGINE_BUNDLED_OPENCV)
+  # CMake's iOS cross-compilation setup can leave CMAKE_SYSTEM_PROCESSOR blank.
+  # OpenCV then omits its ARM64/NEON kernel objects while DNN still refers
+  # to them, causing unresolved opt_NEON::convBlock_* symbols at link time.
+  # Only fill in the missing processor for the explicit single-arch target.
+  if(CMAKE_SYSTEM_NAME STREQUAL "iOS"
+      AND NOT CMAKE_SYSTEM_PROCESSOR
+      AND CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
+    set(CMAKE_SYSTEM_PROCESSOR arm64)
+    message(STATUS "iOS arm64: supply missing CMAKE_SYSTEM_PROCESSOR to OpenCV")
+  endif()
   set(OPENCV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/opencv"
       CACHE PATH "Pinned OpenCV submodule path")
   if(NOT EXISTS "${OPENCV_SOURCE_DIR}/CMakeLists.txt")
@@ -19,7 +29,7 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   # The engine DLL uses MSVC's dynamic CRT (/MD); use the same CRT for
   # static OpenCV libraries to avoid LNK2038 and duplicate CRT symbols.
   set(BUILD_WITH_STATIC_CRT OFF CACHE BOOL "" FORCE)
-  set(BUILD_LIST "core,imgproc" CACHE STRING "" FORCE)
+  set(BUILD_LIST "core,imgproc,flann,features2d,calib3d,objdetect,dnn,video,photo" CACHE STRING "" FORCE)
   set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_PERF_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -42,9 +52,11 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   add_subdirectory("${OPENCV_SOURCE_DIR}"
                    "${CMAKE_CURRENT_BINARY_DIR}/opencv-build"
                    EXCLUDE_FROM_ALL)
-  set(VISION_OPENCV_LIBS opencv_core opencv_imgproc)
+  set(VISION_OPENCV_LIBS opencv_core opencv_imgproc opencv_features2d
+      opencv_calib3d opencv_objdetect opencv_dnn opencv_video opencv_photo
+       opencv_flann)
 else()
-  find_package(OpenCV REQUIRED COMPONENTS core imgproc)
+  find_package(OpenCV REQUIRED COMPONENTS core imgproc flann features2d calib3d objdetect dnn video photo)
   set(VISION_OPENCV_LIBS ${OpenCV_LIBS})
 endif()
 
@@ -57,6 +69,13 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   target_include_directories(vision_engine PRIVATE
     "${OPENCV_SOURCE_DIR}/modules/core/include"
     "${OPENCV_SOURCE_DIR}/modules/imgproc/include"
+    "${OPENCV_SOURCE_DIR}/modules/flann/include"
+    "${OPENCV_SOURCE_DIR}/modules/features2d/include"
+    "${OPENCV_SOURCE_DIR}/modules/calib3d/include"
+    "${OPENCV_SOURCE_DIR}/modules/objdetect/include"
+    "${OPENCV_SOURCE_DIR}/modules/dnn/include"
+    "${OPENCV_SOURCE_DIR}/modules/video/include"
+    "${OPENCV_SOURCE_DIR}/modules/photo/include"
     # OpenCV generates opencv2/opencv_modules.hpp under CMAKE_BINARY_DIR.
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}/opencv-build"
