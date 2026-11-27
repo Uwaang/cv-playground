@@ -8,8 +8,10 @@ environment:
 
 dependencies:
   ffi: ^2.2.0
-  hooks: ^2.2.0
-  code_assets: ^2.0.0
+  # Flutter 3.44 pins meta to 1.18; hooks >=1.0.3 pulls record_use
+  # requiring meta >=1.19.0. Use the 1.0 stable protocol pair for now.
+  hooks: 1.0.2
+  code_assets: 1.0.0
   native_toolchain_cmake: ^0.3.2
   logging: ^1.3.0
 

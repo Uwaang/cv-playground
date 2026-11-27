@@ -7,6 +7,7 @@ import 'package:flutter_app/features/home/home_page.dart';
 import 'package:flutter_app/features/landing/landing_page.dart';
 import 'package:flutter_app/features/profile/profile_page.dart';
 import 'package:flutter_app/features/root/root_page.dart';
+import 'package:flutter_app/features/vision_demo/vision_demo_page.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_router.g.dart';
@@ -44,6 +45,7 @@ class AppRouter extends RootStackRouter {
       ],
     ),
     AutoRoute(page: EventDetailRoute.page),
+    AutoRoute(page: VisionDemoRoute.page),
 
     // Subtitle: Debug Tools Routes
     AutoRoute(page: DebugToolsRoute.page),
