@@ -20,6 +20,9 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_PERF_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  # BUILD_EXAMPLES does not control OpenCV's separate Android sample projects.
+  set(BUILD_ANDROID_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(INSTALL_ANDROID_EXAMPLES OFF CACHE BOOL "" FORCE)
   set(BUILD_opencv_apps OFF CACHE BOOL "" FORCE)
   set(BUILD_JAVA OFF CACHE BOOL "" FORCE)
   set(BUILD_opencv_python2 OFF CACHE BOOL "" FORCE)
@@ -28,6 +31,10 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   set(WITH_GSTREAMER OFF CACHE BOOL "" FORCE)
   set(WITH_GTK OFF CACHE BOOL "" FORCE)
   set(WITH_QT OFF CACHE BOOL "" FORCE)
+  # Minimal cross-platform first build: avoid optional Intel IPP/IPP HAL
+  # libraries (also eliminates the current Linux ipphal header failure).
+  set(WITH_IPP OFF CACHE BOOL "" FORCE)
+  set(BUILD_IPP_IW OFF CACHE BOOL "" FORCE)
 
   add_subdirectory("${OPENCV_SOURCE_DIR}"
                    "${CMAKE_CURRENT_BINARY_DIR}/opencv-build"
