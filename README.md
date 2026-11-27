@@ -1,6 +1,21 @@
-# Flutter Template
+# CV Playground
 
-Cross-platform Flutter application template adapted from STRV. **GitHub `main` is the canonical public source and CI entrypoint.** The current default backend integration is **Supabase Auth**. This is a starter project, not a production-ready app.
+CV experimentation application bootstrapped from [Uwaang/flutter-template](https://github.com/Uwaang/flutter-template) (originally adapted from STRV). The Flutter demo screens and Supabase Auth scaffolding remain for now; this is not yet a finished camera or OpenCV app.
+
+## Native OpenCV bootstrap
+
+- **Source:** Official OpenCV Git Submodule at `third_party/opencv`, pinned to **4.14.0**.
+- **Engine:** Local C++ package under `packages/vision_engine`, built with CMake; OpenCV is linked statically into the FFI shared engine.
+- **Native ABI:** C-compatible Canny grayscale smoke test and version query. Flutter camera and native FFI **have not yet been wired into app screens**.
+- **Actions:** Inherited seven-target Flutter matrix plus the new native C++ engine build matrix; native runtime and Web OpenCV/WASM remain unverified.
+
+```sh
+git submodule update --init --recursive
+cmake -S packages/vision_engine/native -B build/vision-native
+cmake --build build/vision-native --config Release
+```
+
+See [Vision Engine](docs/VISION_ENGINE.md) for the native build, CI boundaries, and planned integration.
 
 ## Current capabilities
 
@@ -44,6 +59,7 @@ The app exposes example Home, Events, Profile and Debug Tools screens. Productio
 | [Project setup](docs/PROJECT_SETUP.md) | App icons, splash, rebranding and signing setup |
 | [CI and publication](docs/CI.md) | GitHub-hosted builds, conditional runtime QA and public/private boundaries |
 | [Runtime QA](docs/QA.md) | Web and Android optional smoke checks, live-test boundaries |
+| [Vision engine](docs/VISION_ENGINE.md) | OpenCV Submodule, C++ CMake, FFI ABI, future integration |
 | [Supabase-first setup](docs/SUPABASE_FIRST.md) | Public configuration, Auth sessions, OAuth boundaries and one-time evidence |
 
 Documentation belongs under `docs/` except these two root entrypoints (`README.md` and `AGENTS.md`). Tool-required files such as `.agents/skills/**/SKILL.md` are exceptions. Prefer revising the existing canonical guide over adding a separate README near a feature.

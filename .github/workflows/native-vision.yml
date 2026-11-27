@@ -1,0 +1,110 @@
+name: Native Vision Engine
+
+on:
+  pull_request:
+    paths:
+      - 'packages/vision_engine/**'
+      - 'third_party/opencv'
+      - '.gitmodules'
+      - '.github/workflows/native-vision.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/vision_engine/**'
+      - 'third_party/opencv'
+      - '.gitmodules'
+      - '.github/workflows/native-vision.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-vision-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-desktop:
+    name: OpenCV C++ ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - target: linux
+            os: ubuntu-24.04
+          - target: windows
+            os: windows-2022
+          - target: macos
+            os: macos-15
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Pin cache to OpenCV submodule revision
+        id: opencv_ref
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD:third_party/opencv)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: build/vision-native
+          key: native-${{ matrix.target }}-${{ steps.opencv_ref.outputs.sha }}-${{ hashFiles('.gitmodules', 'packages/vision_engine/native/**') }}
+      - name: Configure CMake
+        run: cmake -S packages/vision_engine/native -B build/vision-native -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build/vision-native --config Release --parallel 3
+      - name: Run native smoke test
+        run: ctest --test-dir build/vision-native -C Release --output-on-failure
+      - name: Native smoke ABI symbols (Unix only)
+        if: matrix.target != 'windows'
+        shell: bash
+        run: |
+          test -n "$(find build/vision-native -type f \( -name 'libvision_engine.so' -o -name 'libvision_engine.dylib' \) -print -quit)"
+
+  native-mobile:
+    name: OpenCV C++ ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - target: android-arm64
+            os: ubuntu-24.04
+          - target: ios-arm64
+            os: macos-26
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        if: matrix.target == 'android-arm64'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Configure Android CMake
+        if: matrix.target == 'android-arm64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          NDK_DIR="$(find "$ANDROID_HOME/ndk" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          cmake -S packages/vision_engine/native -B build/vision-native \
+            -DCMAKE_TOOLCHAIN_FILE="$NDK_DIR/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24 \
+            -DCMAKE_BUILD_TYPE=Release
+      - name: Configure iOS CMake
+        if: matrix.target == 'ios-arm64'
+        shell: bash
+        run: |
+          cmake -S packages/vision_engine/native -B build/vision-native \
+            -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+            -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build/vision-native --config Release --parallel 3

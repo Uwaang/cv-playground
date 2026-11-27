@@ -1,6 +1,6 @@
-# Flutter Template — Project Overview
+# CV Playground — Project Overview
 
-This document reflects the current GitHub `main` architecture. The template is a lean starting point rather than an STRV-compatible application.
+This project is derived from the Flutter template. The current application routes still reflect that starter; the new CV engine is being introduced as a separately testable local package.
 
 ## Stack and scope
 - Flutter SDK pinned in `.fvmrc`; Android, iOS, Web JS/WASM, Linux, Windows and macOS compile targets.
@@ -8,6 +8,7 @@ This document reflects the current GitHub `main` architecture. The template is a
 - Riverpod with code generation, Freezed, AutoRoute, and SharedPreferences for simple local UI state.
 - Optional Supabase Auth using a public project URL and publishable key. Google/Apple use Supabase OAuth; native/desktop callbacks need independent real-device verification.
 - No bundled REST API/backend, profile database/CRUD, push/local notification service, threat detection, external analytics or signed release pipeline.
+- New native boundary: `packages/vision_engine` (C++/CMake and Dart FFI), plus the official OpenCV Submodule at `third_party/opencv`. See [Vision Engine](VISION_ENGINE.md). This is not yet called by the Flutter screens.
 
 ## Starting the app
 Entry points `lib/main_develop.dart`, `lib/main_staging.dart`, and `lib/main_production.dart` call `setupApp`:

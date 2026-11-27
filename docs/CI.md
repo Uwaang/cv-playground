@@ -1,6 +1,6 @@
 # Continuous Integration and QA
 
-The **public GitHub `main` branch is the canonical source** for this reusable Flutter template. Proposed changes use GitHub branches and pull requests. This repository does not automatically sync with a second source repository.
+This project inherits its Flutter build matrix from `Uwaang/flutter-template`. Once the dedicated GitHub repository is created, its own `main` branch is canonical; do not push app-specific code to the original template.
 
 Any private historical CI or workstation-specific automation is managed separately and must **not** be copied into public branches, GitHub Actions, pull requests, logs, artifacts, or documentation.
 
@@ -17,6 +17,16 @@ Workflow: `.github/workflows/platform-builds.yml`
 - `workflow_dispatch` remains available for an authorized manual build. Branch-protection required checks should be reviewed before marking an entire skipped workflow as required.
 
 The active Flutter SDK version comes from `.fvmrc`. Executable workflow YAML and project configuration take precedence over historical text.
+
+## Native OpenCV validation
+
+Workflow: `.github/workflows/native-vision.yml`
+
+- Checkout the pinned `third_party/opencv` Git Submodule recursively.
+- Build the C++ vision engine and static OpenCV components on Linux, Windows, macOS, Android ARM64, and iOS ARM64 using CMake.
+- Treat this as compilation validation only. Dart Native Assets hook packaging, mobile runtime loading, camera integration and Web OpenCV/WASM need independent tests.
+- Every native matrix target must first complete successfully in the new repository before checks become required for merging.
+- The inherited Web JS/WASM Flutter jobs do **not** yet compile the OpenCV engine.
 
 ## Web runtime verification (conditional)
 
