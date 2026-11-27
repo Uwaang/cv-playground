@@ -51,11 +51,7 @@ Uint8List cannyGray(
   required double lowThreshold,
   required double highThreshold,
 }) {
-  if (width <= 0 ||
-      height <= 0 ||
-      grayscale.length != width * height ||
-      lowThreshold < 0 ||
-      highThreshold < lowThreshold) {
+  if (width <= 0 || height <= 0 || grayscale.length != width * height || lowThreshold < 0 || highThreshold < lowThreshold) {
     throw ArgumentError(
       'Invalid dimensions, input length or Canny thresholds.',
     );
@@ -154,12 +150,8 @@ VisionNativeResult processGray(
   }
   final input = calloc<Uint8>(grayscale.length);
   final output = calloc<Uint8>(grayscale.length);
-  final paired = second == null
-      ? nullptr.cast<Uint8>()
-      : calloc<Uint8>(second.length);
-  final model = modelPath == null
-      ? nullptr.cast<Utf8>()
-      : modelPath.toNativeUtf8();
+  final paired = second == null ? nullptr.cast<Uint8>() : calloc<Uint8>(second.length);
+  final model = modelPath == null ? nullptr.cast<Utf8>() : modelPath.toNativeUtf8();
   const metadataCapacity = 2048;
   final metadata = calloc<Uint8>(metadataCapacity);
   try {

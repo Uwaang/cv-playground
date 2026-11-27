@@ -6,8 +6,7 @@ import 'package:flutter_app/features/vision_demo/vision_operations.dart';
 bool get isNativeCannySupported => false;
 bool get isNativeVisionSupported => false;
 
-Future<String> stageOnnxModel(Uint8List bytes) =>
-    Future.error(UnsupportedError('ONNX inference requires a native device.'));
+Future<String> stageOnnxModel(Uint8List bytes) => Future.error(UnsupportedError('ONNX inference requires a native device.'));
 
 /// Browsers cannot load the source-built C++ Native Assets library via Dart FFI.
 Future<VisionResult> runVision(

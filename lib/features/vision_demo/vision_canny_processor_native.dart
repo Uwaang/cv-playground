@@ -77,15 +77,11 @@ VisionResult _processImage(
 
   final upright = img.bakeOrientation(decoded);
   const maxDimension = 1024;
-  final longest = upright.width > upright.height
-      ? upright.width
-      : upright.height;
+  final longest = upright.width > upright.height ? upright.width : upright.height;
   final scale = longest > maxDimension ? maxDimension / longest : 1.0;
   final width = (upright.width * scale).round().clamp(1, maxDimension);
   final height = (upright.height * scale).round().clamp(1, maxDimension);
-  final image = scale < 1.0
-      ? img.copyResize(upright, width: width, height: height)
-      : upright;
+  final image = scale < 1.0 ? img.copyResize(upright, width: width, height: height) : upright;
   final grayscale = _toGray(image);
 
   Uint8List? second;
@@ -134,15 +130,10 @@ Uint8List _toGray(img.Image image) {
       // Composite transparent source pixels onto white.
       final maxValue = pixel.maxChannelValue;
       final alpha = pixel.a.toDouble() / maxValue;
-      final r =
-          (pixel.r.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
-      final g =
-          (pixel.g.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
-      final b =
-          (pixel.b.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
-      grayscale[y * width + x] = ((77 * r + 150 * g + 29 * b) / 256)
-          .round()
-          .clamp(0, 255);
+      final r = (pixel.r.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
+      final g = (pixel.g.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
+      final b = (pixel.b.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
+      grayscale[y * width + x] = ((77 * r + 150 * g + 29 * b) / 256).round().clamp(0, 255);
     }
   }
   return grayscale;

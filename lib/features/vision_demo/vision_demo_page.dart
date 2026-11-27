@@ -39,10 +39,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
     uniformTypeIdentifiers: ['public.jpeg', 'public.png'],
   );
 
-  bool get _canApply =>
-      _original != null &&
-      (!_operation.needsSecond || _second != null) &&
-      (!_operation.needsModel || _modelPath != null);
+  bool get _canApply => _original != null && (!_operation.needsSecond || _second != null) && (!_operation.needsModel || _modelPath != null);
 
   Future<void> _loadImage({bool secondary = false}) async {
     if (_busy) return;
@@ -110,11 +107,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
 
   Future<void> _apply() async {
     final source = _original;
-    if (source == null ||
-        _busy ||
-        !_canApply ||
-        !processor.isNativeVisionSupported)
-      return;
+    if (source == null || _busy || !_canApply || !processor.isNativeVisionSupported) return;
     final request = ++_generation;
     setState(() {
       _busy = true;
@@ -243,9 +236,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       OutlinedButton.icon(
-                        onPressed: _busy
-                            ? null
-                            : () => _loadImage(secondary: true),
+                        onPressed: _busy ? null : () => _loadImage(secondary: true),
                         icon: const Icon(Icons.compare),
                         label: const Text('Choose second image / frame'),
                       ),
@@ -345,9 +336,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                         title: operation.label + ' output',
                         bytes: output?.png,
                         detail: output == null
-                            ? (supported
-                                  ? 'Apply to see the result'
-                                  : 'Not available on Web')
+                            ? (supported ? 'Apply to see the result' : 'Not available on Web')
                             : output.width.toString() +
                                   ' × ' +
                                   output.height.toString() +
