@@ -57,7 +57,7 @@ jobs:
       - run: flutter pub get
       - run: dart tool/create_ci_env.dart
       - run: flutter gen-l10n --arb-dir assets/localization --template-arb-file app_en.arb --output-localization-file app_localizations.gen.dart --output-dir lib/assets
-      # Use generated Dart committed to main (validated by the Platform Builds quality job).
+      - run: dart run build_runner build --delete-conflicting-outputs
       - name: Build main (mock-only, no secret credentials)
         run: |
           set -euo pipefail
@@ -99,6 +99,7 @@ jobs:
               flutter pub get &&
               dart tool/create_ci_env.dart &&
               flutter gen-l10n --arb-dir assets/localization --template-arb-file app_en.arb --output-localization-file app_localizations.gen.dart --output-dir lib/assets &&
+              dart run build_runner build --delete-conflicting-outputs &&
               flutter build web --release --pwa-strategy=none -t lib/main_production.dart --dart-define=FLUTTER_TEMPLATE_PAGES_HASH_ROUTING=true --base-href "/cv-playground/previews/pr-${number}/" &&
               grep -q "<base href=\"/cv-playground/previews/pr-${number}/\">" build/web/index.html &&
               mkdir -p "$output_dir" &&
