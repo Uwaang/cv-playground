@@ -22,7 +22,7 @@ external Pointer<Char> _opencvVersion();
     Pointer<Uint8>,
     Int32,
     Double,
-    Double
+    Double,
   )
 >(symbol: 'vision_engine_canny_gray')
 external int _cannyGray(
@@ -56,7 +56,9 @@ Uint8List cannyGray(
       grayscale.length != width * height ||
       lowThreshold < 0 ||
       highThreshold < lowThreshold) {
-    throw ArgumentError('Invalid dimensions, input length or Canny thresholds.');
+    throw ArgumentError(
+      'Invalid dimensions, input length or Canny thresholds.',
+    );
   }
 
   final input = calloc<Uint8>(grayscale.length);
@@ -64,7 +66,14 @@ Uint8List cannyGray(
   try {
     input.asTypedList(grayscale.length).setAll(0, grayscale);
     final status = _cannyGray(
-      input, width, height, width, output, width, lowThreshold, highThreshold,
+      input,
+      width,
+      height,
+      width,
+      output,
+      width,
+      lowThreshold,
+      highThreshold,
     );
     if (status != 0) {
       throw StateError('OpenCV Canny failed: native error $status');
@@ -86,11 +95,20 @@ class VisionNativeResult {
 
 @Native<
   Int32 Function(
-    Pointer<Uint8>, Int32, Int32, Int32,
-    Pointer<Uint8>, Int32,
-    Pointer<Uint8>, Int32,
-    Int32, Double, Double,
-    Pointer<Utf8>, Pointer<Uint8>, Int32
+    Pointer<Uint8>,
+    Int32,
+    Int32,
+    Int32,
+    Pointer<Uint8>,
+    Int32,
+    Pointer<Uint8>,
+    Int32,
+    Int32,
+    Double,
+    Double,
+    Pointer<Utf8>,
+    Pointer<Uint8>,
+    Int32,
   )
 >(symbol: 'vision_engine_process_gray')
 external int _processGray(
@@ -136,8 +154,12 @@ VisionNativeResult processGray(
   }
   final input = calloc<Uint8>(grayscale.length);
   final output = calloc<Uint8>(grayscale.length);
-  final paired = second == null ? nullptr.cast<Uint8>() : calloc<Uint8>(second.length);
-  final model = modelPath == null ? nullptr.cast<Utf8>() : modelPath.toNativeUtf8();
+  final paired = second == null
+      ? nullptr.cast<Uint8>()
+      : calloc<Uint8>(second.length);
+  final model = modelPath == null
+      ? nullptr.cast<Utf8>()
+      : modelPath.toNativeUtf8();
   const metadataCapacity = 2048;
   final metadata = calloc<Uint8>(metadataCapacity);
   try {
@@ -166,7 +188,9 @@ VisionNativeResult processGray(
           'Try another image pair or standard raw YOLOv8/YOLO11 ONNX export.',
         );
       }
-      throw StateError('OpenCV operation $operation failed (native error $status).');
+      throw StateError(
+        'OpenCV operation $operation failed (native error $status).',
+      );
     }
     return VisionNativeResult(
       pixels: Uint8List.fromList(output.asTypedList(grayscale.length)),

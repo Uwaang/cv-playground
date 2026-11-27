@@ -22,7 +22,6 @@ Future<String> stageOnnxModel(Uint8List bytes) async {
   return file.path;
 }
 
-
 /// Keeps decoding, OpenCV FFI and PNG encoding off the Flutter UI isolate.
 Future<VisionResult> runVision(
   Uint8List encodedImage, {
@@ -78,8 +77,9 @@ VisionResult _processImage(
 
   final upright = img.bakeOrientation(decoded);
   const maxDimension = 1024;
-  final longest =
-      upright.width > upright.height ? upright.width : upright.height;
+  final longest = upright.width > upright.height
+      ? upright.width
+      : upright.height;
   final scale = longest > maxDimension ? maxDimension / longest : 1.0;
   final width = (upright.width * scale).round().clamp(1, maxDimension);
   final height = (upright.height * scale).round().clamp(1, maxDimension);
@@ -95,9 +95,7 @@ VisionResult _processImage(
       throw const FormatException('Could not decode second image.');
     }
     final paired = img.bakeOrientation(pairedDecoded);
-    second = _toGray(
-      img.copyResize(paired, width: width, height: height),
-    );
+    second = _toGray(img.copyResize(paired, width: width, height: height));
   }
 
   final nativeResult = vision.processGray(
@@ -142,8 +140,9 @@ Uint8List _toGray(img.Image image) {
           (pixel.g.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
       final b =
           (pixel.b.toDouble() / maxValue) * 255 * alpha + 255 * (1 - alpha);
-      grayscale[y * width + x] =
-          ((77 * r + 150 * g + 29 * b) / 256).round().clamp(0, 255);
+      grayscale[y * width + x] = ((77 * r + 150 * g + 29 * b) / 256)
+          .round()
+          .clamp(0, 255);
     }
   }
   return grayscale;
