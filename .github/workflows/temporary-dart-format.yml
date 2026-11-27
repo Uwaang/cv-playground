@@ -1,0 +1,26 @@
+name: Temporary formatter for issue 4
+on:
+  push:
+    branches: [feat/opencv-playground-suite]
+permissions:
+  contents: read
+jobs:
+  dart-format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          cache: true
+      - name: Generate canonical Dart format diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          dart format lib/features/vision_demo packages/vision_engine/lib test/features/vision_demo
+          echo FORMAT_PATCH_BEGIN
+          git diff --binary -- lib/features/vision_demo packages/vision_engine/lib test/features/vision_demo | gzip -c | base64 -w0 | fold -w120
+          echo FORMAT_PATCH_END
