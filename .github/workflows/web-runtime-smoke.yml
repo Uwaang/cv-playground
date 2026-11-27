@@ -49,8 +49,7 @@ jobs:
       - run: flutter pub get
       - run: dart tool/create_ci_env.dart
       - run: flutter gen-l10n --arb-dir assets/localization --template-arb-file app_en.arb --output-localization-file app_localizations.gen.dart --output-dir lib/assets
-      # Generated sources are committed and checked for drift by Platform Builds.
-      # Avoid another Native Assets compilation from build_runner.
+      - run: dart run build_runner build --delete-conflicting-outputs
       - name: Compile actual web artifact
         env:
           MODE: ${{ matrix.mode }}
