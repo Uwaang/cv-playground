@@ -48,6 +48,15 @@ endif()
 add_library(vision_engine SHARED src/vision_engine.cpp)
 target_compile_definitions(vision_engine PRIVATE VISION_ENGINE_BUILD)
 target_include_directories(vision_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+if(VISION_ENGINE_BUNDLED_OPENCV)
+  # OpenCV's in-tree static targets do not consistently export the public
+  # headers to external targets in every platform/SDK configuration.
+  target_include_directories(vision_engine PRIVATE
+    "${OPENCV_SOURCE_DIR}/modules/core/include"
+    "${OPENCV_SOURCE_DIR}/modules/imgproc/include"
+    "${CMAKE_CURRENT_BINARY_DIR}/opencv-build"
+  )
+endif()
 target_link_libraries(vision_engine PRIVATE ${VISION_OPENCV_LIBS})
 
 set_target_properties(vision_engine PROPERTIES

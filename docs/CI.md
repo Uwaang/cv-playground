@@ -25,6 +25,7 @@ Workflow: `.github/workflows/native-vision.yml`
 - Checkout the pinned `third_party/opencv` Git Submodule recursively.
 - Build the C++ vision engine and static OpenCV components on Linux, Windows, macOS, Android ARM64, and iOS ARM64 using CMake.
 - On Linux, run a separate Dart Native Assets smoke test to exercise the CMake build hook and C ABI through Dart FFI; compiling C++ alone does not verify the hook.
+- The app root analyzer excludes `packages/vision_engine/**` because it is a separate pub package. Its own `dart pub get`, `dart analyze`, and `dart test` run from that package directory in the native CI workflow.
 - Treat this as compilation validation only. Dart Native Assets hook packaging, mobile runtime loading, camera integration and Web OpenCV/WASM need independent tests.
 - Every native matrix target must first complete successfully in the new repository before checks become required for merging.
 - The inherited Web JS/WASM Flutter jobs do **not** yet compile the OpenCV engine.

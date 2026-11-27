@@ -73,6 +73,10 @@ jobs:
         if: matrix.target == 'linux'
         working-directory: packages/vision_engine
         run: dart pub get
+      - name: Analyze Dart FFI package independently
+        if: matrix.target == 'linux'
+        working-directory: packages/vision_engine
+        run: dart analyze
       - name: Run Dart FFI smoke tests
         if: matrix.target == 'linux'
         working-directory: packages/vision_engine
