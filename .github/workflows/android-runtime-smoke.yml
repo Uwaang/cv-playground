@@ -35,7 +35,7 @@ jobs:
           flutter-version-file: .fvmrc
           cache: true
       - run: flutter pub get
-      - run: dart run tool/create_ci_env.dart
+      - run: dart tool/create_ci_env.dart
       - run: python3 tool/prepare_native_ci.py android
       - name: Provide valid debug signing hash to freeRASP
         run: python3 qa/mobile/prepare_ci_env.py

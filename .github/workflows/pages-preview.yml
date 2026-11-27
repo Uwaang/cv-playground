@@ -55,7 +55,7 @@ jobs:
           flutter-version-file: .fvmrc
           cache: true
       - run: flutter pub get
-      - run: dart run tool/create_ci_env.dart
+      - run: dart tool/create_ci_env.dart
       - run: flutter gen-l10n --arb-dir assets/localization --template-arb-file app_en.arb --output-localization-file app_localizations.gen.dart --output-dir lib/assets
       - run: dart run build_runner build --delete-conflicting-outputs
       - name: Build main (mock-only, no secret credentials)
@@ -97,7 +97,7 @@ jobs:
             if (
               cd "$source_dir" &&
               flutter pub get &&
-              dart run tool/create_ci_env.dart &&
+              dart tool/create_ci_env.dart &&
               flutter gen-l10n --arb-dir assets/localization --template-arb-file app_en.arb --output-localization-file app_localizations.gen.dart --output-dir lib/assets &&
               dart run build_runner build --delete-conflicting-outputs &&
               flutter build web --release --pwa-strategy=none -t lib/main_production.dart --dart-define=FLUTTER_TEMPLATE_PAGES_HASH_ROUTING=true --base-href "/cv-playground/previews/pr-${number}/" &&
