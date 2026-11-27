@@ -19,7 +19,6 @@ void main(List<String> args) async {
     }
 
     final logger = Logger('vision_engine')
-      ..level = Level.ALL
       ..onRecord.listen((record) => stderr.writeln(record));
 
     final native = input.packageRoot.resolve('native/');

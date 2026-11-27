@@ -16,6 +16,9 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
 
   # OpenCV becomes static code inside our one FFI shared library.
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+  # The engine DLL uses MSVC's dynamic CRT (/MD); use the same CRT for
+  # static OpenCV libraries to avoid LNK2038 and duplicate CRT symbols.
+  set(BUILD_WITH_STATIC_CRT OFF CACHE BOOL "" FORCE)
   set(BUILD_LIST "core,imgproc" CACHE STRING "" FORCE)
   set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_PERF_TESTS OFF CACHE BOOL "" FORCE)
