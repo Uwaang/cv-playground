@@ -20,10 +20,10 @@ The active Flutter SDK version comes from `.fvmrc`. Executable workflow YAML and
 
 ## Native Assets compilation cost
 
-- The `quality` job runs `build_runner` once, then `git diff --exit-code` ensures generated Dart remains committed and reproducible. Platform, Web smoke, Android emulator and Pages jobs reuse those generated files rather than rerun `build_runner` on every runner.
-- Run the standalone fixture generator with `dart tool/create_ci_env.dart` instead of `dart run tool/create_ci_env.dart` so it does not invoke package build hooks simply to write placeholder environment files.
-- Native Flutter package builds and the separate Linux FFI smoke test still invoke the OpenCV Native Assets hook as needed. Do not bypass the hook for real native builds or assume Web includes OpenCV WASM.
-- This is the first low-maintenance optimization. Before adding large cross-run CMake caches, measure CI durations and weigh cache size, SDK changes, and native-platform correctness.
+- **Use `dart tool/create_ci_env.dart`, not `dart run tool/create_ci_env.dart`**, for the standalone CI fixture script. The latter invokes the OpenCV Native Assets build hook even though the script only writes placeholder environment files.
+- **Keep `dart run build_runner build --delete-conflicting-outputs` in each CI job**. This repository deliberately ignores generated Dart (including routing, model, provider and asset code). Fresh GitHub runners must regenerate it before compiling. The root quality job also validates generated code with analyzer and tests; `git diff --exit-code` alone does not detect ignored generated files.
+- Actual Flutter native builds and the Linux Dart FFI smoke test still invoke the native OpenCV hook when needed. The direct script form does not disable Native Assets in the app or alter platform coverage.
+- This is a low-maintenance first optimization. Evaluate further compiler/hook caches separately based on measured runtimes, cache size, and platform correctness.
 
 ## Native OpenCV validation
 
