@@ -122,8 +122,7 @@ jobs:
           # regenerate and commit the macOS lock on a macOS host separately.
           rm -f macos/Podfile.lock
       - run: flutter gen-l10n --arb-dir assets/localization --template-arb-file app_en.arb --output-localization-file app_localizations.gen.dart --output-dir lib/assets
-      # Codegen drift is checked by the quality job. Re-running build_runner
-      # here triggers an unnecessary OpenCV Native Assets source build.
+      - run: dart run build_runner build --delete-conflicting-outputs
       - name: Build and stage runtime files
         env:
           TARGET: ${{ matrix.target }}
