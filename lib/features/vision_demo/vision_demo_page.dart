@@ -5,7 +5,8 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/features/vision_demo/canny_result.dart';
 import 'package:flutter_app/features/vision_demo/vision_canny_processor_native.dart'
-    if (dart.library.js_interop) 'vision_canny_processor_web.dart' as processor;
+    if (dart.library.js_interop) 'vision_canny_processor_web.dart'
+    as processor;
 
 @RoutePage()
 class VisionDemoPage extends StatefulWidget {
@@ -228,9 +229,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                         title: 'Canny output',
                         bytes: output?.png,
                         detail: output == null
-                            ? (supported
-                                  ? 'Apply Canny to see the result'
-                                  : 'Not available on Web')
+                            ? (supported ? 'Apply Canny to see the result' : 'Not available on Web')
                             : '${output.width} × ${output.height} · OpenCV '
                                   '${output.openCvVersion}',
                       );
