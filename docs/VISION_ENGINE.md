@@ -10,6 +10,7 @@
 - **Generated headers**: OpenCV's generated `opencv2/opencv_modules.hpp` must also be reachable from the containing CMake build directory.
 - **Windows CRT**: Keep OpenCV static libraries and the shared engine on the same MSVC dynamic CRT (`/MD`) using `BUILD_WITH_STATIC_CRT=OFF`. Static OpenCV linking is separate from the C runtime linking choice.
 - **Native Assets logging**: The build hook uses an inherited logger level, rather than setting a named logger's level while hierarchical logging is disabled.
+- **Windows smoke test**: CMake copies the engine DLL next to the CTest executable so the Windows loader can resolve it without modifying the runner's global PATH.
 - **Dart integration**: `packages/vision_engine` contains `hook/build.dart` and a C ABI accessed through Dart `@Native` declarations. The native-assets CMake adapter is experimental: platform builds must verify hook output, packaging, and runtime loading before the app depends on it.
 - **Current algorithm**: Canny on packed 8-bit grayscale images, as an intentionally small FFI smoke test. The Dart API copies pixels; this is **not** a zero-copy real-time camera pipeline.
 - **Camera**: Flutter-first when implemented, only add native camera capture if performance tests justify it.

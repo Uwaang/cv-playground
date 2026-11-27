@@ -79,5 +79,15 @@ include(CTest)
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
   add_executable(vision_engine_smoke test/vision_engine_smoke.cpp)
   target_link_libraries(vision_engine_smoke PRIVATE vision_engine)
+  if(WIN32)
+    # The Windows test executable lives under bin/Release, while our DLL
+    # is built under Release. Put the DLL next to the test for CTest.
+    add_custom_command(TARGET vision_engine_smoke POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+              "$<TARGET_FILE:vision_engine>"
+              "$<TARGET_FILE_DIR:vision_engine_smoke>"
+      VERBATIM
+    )
+  endif()
   add_test(NAME vision_engine_smoke COMMAND vision_engine_smoke)
 endif()
