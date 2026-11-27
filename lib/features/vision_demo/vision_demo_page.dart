@@ -4,10 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/features/vision_demo/canny_result.dart';
-import 'package:flutter_app/features/vision_demo/vision_operations.dart';
 import 'package:flutter_app/features/vision_demo/vision_canny_processor_native.dart'
     if (dart.library.js_interop) 'vision_canny_processor_web.dart'
     as processor;
+import 'package:flutter_app/features/vision_demo/vision_operations.dart';
 
 @RoutePage()
 class VisionDemoPage extends StatefulWidget {
@@ -191,7 +191,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     FilledButton.icon(
-                      onPressed: _busy ? null : () => _loadImage(),
+                      onPressed: _busy ? null : _loadImage,
                       icon: const Icon(Icons.add_photo_alternate_outlined),
                       label: const Text('Choose image'),
                     ),
@@ -218,7 +218,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                       DropdownMenuItem(
                         value: candidate,
                         child: Text(
-                          candidate.category + ' · ' + candidate.label,
+                          '${candidate.category} · ${candidate.label}',
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -299,7 +299,7 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                     child: FilledButton.tonalIcon(
                       onPressed: _busy || !_canApply ? null : _apply,
                       icon: const Icon(Icons.play_arrow),
-                      label: Text('Apply ' + operation.label),
+                      label: Text('Apply ${operation.label}'),
                     ),
                   ),
                 ],
@@ -333,17 +333,12 @@ class _VisionDemoPageState extends State<VisionDemoPage> {
                         detail: _originalName,
                       );
                       final processed = _PreviewCard(
-                        title: operation.label + ' output',
+                        title: '${operation.label} output',
                         bytes: output?.png,
                         detail: output == null
                             ? (supported ? 'Apply to see the result' : 'Not available on Web')
-                            : output.width.toString() +
-                                  ' × ' +
-                                  output.height.toString() +
-                                  ' · OpenCV ' +
-                                  output.openCvVersion +
-                                  '\n' +
-                                  output.metadata,
+                            : '${output.width} × ${output.height} · OpenCV '
+                                  '${output.openCvVersion}\n${output.metadata}',
                       );
                       if (constraints.maxWidth < 680) {
                         return Column(
@@ -397,7 +392,6 @@ class _ParameterSlider extends StatelessWidget {
           flex: 4,
           child: Slider(
             value: value.clamp(0.0, max),
-            min: 0,
             max: max,
             onChanged: enabled ? onChanged : null,
           ),
