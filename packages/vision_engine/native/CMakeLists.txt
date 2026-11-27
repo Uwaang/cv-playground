@@ -19,7 +19,7 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   # The engine DLL uses MSVC's dynamic CRT (/MD); use the same CRT for
   # static OpenCV libraries to avoid LNK2038 and duplicate CRT symbols.
   set(BUILD_WITH_STATIC_CRT OFF CACHE BOOL "" FORCE)
-  set(BUILD_LIST "core,imgproc,features2d,calib3d,objdetect,dnn,video,photo" CACHE STRING "" FORCE)
+  set(BUILD_LIST "core,imgproc,flann,features2d,calib3d,objdetect,dnn,video,photo" CACHE STRING "" FORCE)
   set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_PERF_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -43,9 +43,10 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
                    "${CMAKE_CURRENT_BINARY_DIR}/opencv-build"
                    EXCLUDE_FROM_ALL)
   set(VISION_OPENCV_LIBS opencv_core opencv_imgproc opencv_features2d
-      opencv_calib3d opencv_objdetect opencv_dnn opencv_video opencv_photo)
+      opencv_calib3d opencv_objdetect opencv_dnn opencv_video opencv_photo
+       opencv_flann)
 else()
-  find_package(OpenCV REQUIRED COMPONENTS core imgproc)
+  find_package(OpenCV REQUIRED COMPONENTS core imgproc flann features2d calib3d objdetect dnn video photo)
   set(VISION_OPENCV_LIBS ${OpenCV_LIBS})
 endif()
 
@@ -58,6 +59,7 @@ if(VISION_ENGINE_BUNDLED_OPENCV)
   target_include_directories(vision_engine PRIVATE
     "${OPENCV_SOURCE_DIR}/modules/core/include"
     "${OPENCV_SOURCE_DIR}/modules/imgproc/include"
+    "${OPENCV_SOURCE_DIR}/modules/flann/include"
     "${OPENCV_SOURCE_DIR}/modules/features2d/include"
     "${OPENCV_SOURCE_DIR}/modules/calib3d/include"
     "${OPENCV_SOURCE_DIR}/modules/objdetect/include"
